@@ -1,3 +1,7 @@
+-- scara#9078
+-- pornhub roblox exploit hub
+-- luau
+
 --// Services
 local playerService = game:GetService('Players')
 local userInputService = game:GetService('UserInputService')
@@ -47,11 +51,11 @@ local exploits = {
 		func = function(settings: {walkSpeed: number, jumpHeight: number})
 			local humanoid = player.Character:FindFirstChildWhichIsA('Humanoid')
 			
-			if settings.walkSpeed ~= 0 then
+			if settings.walkSpeed and settings.walkSpeed ~= 0 then
 				humanoid.WalkSpeed = settings.walkSpeed
 			end
 			
-			if settings.jumpHeight ~= 9 then
+			if settings.jumpHeight and settings.jumpHeight ~= 0 then
 				humanoid.UseJumpPower = false
 				humanoid.JumpHeight = settings.jumpHeight
 			end
@@ -69,6 +73,7 @@ local exploits = {
 	}
 }
 
+-- construct main gui
 local function init()
 	local gui = Instance.new('ScreenGui')
 	gui.ResetOnSpawn = false
@@ -78,7 +83,8 @@ local function init()
 	background.Size = UDim2.new(0, 250, 0, 350)
 	background.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	background.BorderSizePixel = 0
-		
+	background.AnchorPoint = Vector2.new(0.5, 0.5)
+	
 	local top = Instance.new('TextLabel', background)
 	top.Size = UDim2.new(1, 0, 0, 50)
 	top.Position = UDim2.new()
@@ -92,6 +98,7 @@ local function init()
 	
 	local mouse = player:GetMouse()
 	
+	-- handes dragging ui
 	top.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
 			background.AnchorPoint = Vector2.new((mouse.X - background.AbsolutePosition.X) / 250, (mouse.Y - background.AbsolutePosition.Y) / 350)
@@ -104,6 +111,7 @@ local function init()
 		end
 	end)
 	
+	-- handles hiding ui
 	userInputService.InputBegan:Connect(function(input, alreadyProcessed)
 		if not alreadyProcessed and (input.KeyCode == Enum.KeyCode.RightShift) then
 			background.Visible = not background.Visible
@@ -130,6 +138,7 @@ local function init()
 	main.Position = UDim2.new(0, 0, 0, 50)
 	main.BackgroundTransparency = 1
 	
+	-- handles back button
 	back.Activated:Connect(function()
 		if openPage then
 			openPage.Visible = false
@@ -137,11 +146,11 @@ local function init()
 		end
 	end)
 	
+	-- function to create a new button and page linked to the button
 	local function newButton(title: string, info: {settings: {any: any}, func: (any) -> nil}): TextButton
 		local settings = {}
 		
 		local button = Instance.new('TextButton', main)
-		
 		button.Size = UDim2.new(1, -10, 0, 25)
 		button.Position = UDim2.new(0, 5, 0, 5 + (buttons * 30))
 		button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -166,29 +175,23 @@ local function init()
 		execute.Position = UDim2.new(0, 5, 0, 5)
 		execute.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
-		execute.Text = 'Execute'
+		execute.Text = '<b>Execute</b>'
+		execute.RichText = true
 		execute.Font = font
 		execute.TextSize = fontSize
 		execute.TextColor3 = Color3.fromRGB(255, 255, 255)
 		
 		Instance.new('UICorner', execute).CornerRadius = UDim.new(0, 5)
 		
+		-- executes the exploit
 		execute.Activated:Connect(function()
 			info.func(settings)
 		end)
 		
+		-- constructs setting buttons
 		local pageButtons = 1
 		for setting: string, settingType: string in info.settings do
-			if settingType == 'boolean' then
-				settings[setting] = false
-				
-			elseif settingType == 'string' then
-				settings[setting] = ''
-				
-			elseif settingType == 'number' then
-				settings[setting] = 0
-			
-			else
+			if not ((settingType == 'boolean') or (settingType == 'string') or (settingType == 'number')) then
 				continue
 			end
 			
