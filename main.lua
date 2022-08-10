@@ -12,40 +12,28 @@ local fontSize = 18
 local exploits = {
 	['Click Teleport'] = {
 		settings = {
-			inTool = 'boolean',
 			starterGear = 'boolean'
 		},
 		
-		func = function(settings: {inTool: boolean, starterGear: boolean})
+		func = function(settings: {starterGear: boolean})
 			local mouse = player:GetMouse()
 			
-			local function tp()
-				local pos = mouse.Hit
-				pos = CFrame.new(pos.X, pos.Y + 2.5, pos.Z)
-				game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
-			end
-			
-			if settings.inTool then
-				local function getTool()
-					local tool = Instance.new("Tool", player.Backpack)
-					tool.RequiresHandle = false
-					tool.Name = "Click Teleport"
+			local function getTool()
+				local tool = Instance.new("Tool", player.Backpack)
+				tool.RequiresHandle = false
+				tool.Name = "Click Teleport"
 
-					tool.Activated:Connect(tp)
-				end
-				
-				getTool()
-				
-				if settings.starterGear then
-					player.CharacterAdded:Connect(getTool)
-				end
-				
-			else
-				userInputService.InputBegan:Connect(function(input, alreadyProcessed)
-					if (input.UserInputType == Enum.UserInputType.MouseButton1) and not alreadyProcessed then
-						tp()
-					end
+				tool.Activated:Connect(function ()
+					local pos = mouse.Hit
+					pos = CFrame.new(pos.X, pos.Y + 2.5, pos.Z)
+					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
 				end)
+			end
+				
+			getTool()
+				
+			if settings.starterGear then
+				player.CharacterAdded:Connect(getTool)
 			end
 		end
 	},
@@ -69,6 +57,16 @@ local exploits = {
 			end
 		end,
 	},
+	
+	['Teleport To Player'] = {
+		settings = {
+			playerName = 'string'
+		},
+		
+		func = function(settings: {playerName: string})
+			player.Character.PrimaryPart.CFrame = game.Players[settings.playerName].Character.PrimaryPart.CFrame
+		end,
+	}
 }
 
 local function init()
@@ -222,7 +220,7 @@ local function init()
 					enabled.BackgroundColor3 = if settings[setting] then Color3.new(0, 255, 0) else Color3.new(255, 0, 0)
 				end)
 				
-			elseif (settingType == 'boolean') or (settingType == 'number') then
+			elseif (settingType == 'string') or (settingType == 'number') then
 				local settingTab = Instance.new('TextBox', page)
 				settingTab.Size = UDim2.new(1, -10, 0, 25)
 				settingTab.Position = UDim2.new(0, 5, 0, 5 + (pageButtons * 30))
