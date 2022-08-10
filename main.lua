@@ -190,7 +190,7 @@ local function init()
 		
 		-- constructs setting buttons
 		local pageButtons = 1
-		for setting: string, settingType: string in info.settings do
+		for setting: string, settingType: string in pairs(info.settings) do
 			if not ((settingType == 'boolean') or (settingType == 'string') or (settingType == 'number')) then
 				continue
 			end
@@ -256,7 +256,7 @@ local function init()
 		return button
 	end
 	
-	for title: string, exploit: {any} in exploits do
+	for title: string, exploit: {any} in pairs(exploits) do
 		if exploit['settings'] then
 			newButton(title, exploit)
 		else
