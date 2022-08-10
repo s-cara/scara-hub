@@ -4,6 +4,8 @@ local userInputService = game:GetService('UserInputService')
 
 --// Constants
 local player = playerService.LocalPlayer
+local font = Enum.Font.SourceSansSemibold
+local fontSize = 18
 
 --// Functions
 -- Exploit functions
@@ -46,7 +48,27 @@ local exploits = {
 				end)
 			end
 		end
-	}
+	},
+	
+	['Humanoid'] = {
+		settings = {
+			walkSpeed = 'number',
+			jumpHeight = 'number'
+		},
+		
+		func = function(settings: {walkSpeed: number, jumpHeight: number})
+			local humanoid = player.Character:FindFirstChildWhichIsA('Humanoid')
+			
+			if settings.walkSpeed ~= 0 then
+				humanoid.WalkSpeed = settings.walkSpeed
+			end
+			
+			if settings.jumpHeight ~= 9 then
+				humanoid.UseJumpPower = false
+				humanoid.JumpHeight = settings.jumpHeight
+			end
+		end,
+	},
 }
 
 local function init()
@@ -66,11 +88,29 @@ local function init()
 	top.Position = UDim2.new()
 	top.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	top.BorderSizePixel = 0
-	top.Text = '<b>SCARA HUB</b>'
+	top.Text = '<b>Porn<font color="rgb(255,163,26)">Hub</font></b>'
 	top.Font = Enum.Font.Gotham
 	top.TextSize = 30
 	top.RichText = true
 	top.TextColor3 = Color3.fromRGB(255, 255, 255)
+	
+	local beingDragged = false
+	
+	top.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 then
+			beingDragged = true
+		end
+	end)
+	
+	top.InputEnded:Connect(function(input)
+		if beingDragged and (input.UserInputType == Enum.UserInputType.MouseButton1) then
+			beingDragged = false
+			
+			local mouse = player:GetMouse()
+			
+			background.Position = UDim2.new(mouse.X, 0, mouse.Y, 0)
+		end
+	end)
 	
 	local buttons = 0
 	local openPage: Frame
@@ -97,8 +137,8 @@ local function init()
 		button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 		
 		button.Text = title
-		button.Font = Enum.Font.GothamSemibold 
-		button.TextSize = 15
+		button.Font = font
+		button.TextSize = fontSize
 		button.TextColor3 = Color3.fromRGB(255, 255, 255)
 		
 		Instance.new('UICorner', button).CornerRadius = UDim.new(0, 5)
@@ -117,14 +157,13 @@ local function init()
 		execute.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
 		execute.Text = 'Execute'
-		execute.Font = Enum.Font.GothamSemibold
-		execute.TextSize = 15
+		execute.Font = font
+		execute.TextSize = fontSize
 		execute.TextColor3 = Color3.fromRGB(255, 255, 255)
 		
 		Instance.new('UICorner', execute).CornerRadius = UDim.new(0, 5)
 		
 		execute.Activated:Connect(function()
-			print(settings)
 			info.func(settings)
 		end)
 		
@@ -132,38 +171,64 @@ local function init()
 		for setting: string, settingType: string in info.settings do
 			if settingType == 'boolean' then
 				settings[setting] = false
+				
+			elseif settingType == 'string' then
+				settings[setting] = ''
+				
+			elseif settingType == 'number' then
+				settings[setting] = 0
+			
 			else
 				continue
 			end
 			
-			local settingTab = Instance.new('TextButton', page)
-			settingTab.Size = UDim2.new(1, -10, 0, 25)
-			settingTab.Position = UDim2.new(0, 5, 0, 5 + (pageButtons * 30))
-			settingTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+			if settingType == 'boolean' then
+				local settingTab = Instance.new('TextButton', page)
+				settingTab.Size = UDim2.new(1, -10, 0, 25)
+				settingTab.Position = UDim2.new(0, 5, 0, 5 + (pageButtons * 30))
+				settingTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
-			settingTab.Text = ' '..setting
-			settingTab.Font = Enum.Font.GothamSemibold
-			settingTab.TextSize = 15
-			settingTab.TextColor3 = Color3.fromRGB(255, 255, 255)
-			
-			settingTab.TextXAlignment = Enum.TextXAlignment.Left
-			
-			Instance.new('UICorner', settingTab).CornerRadius = UDim.new(0, 5)
-			
-			local enabled = Instance.new('Frame', settingTab)
-			enabled.AnchorPoint = Vector2.new(1, 0.5)
-			enabled.Position = UDim2.new(1, -10, 0.5, 0)
-			enabled.Size = UDim2.new(0, 10, 0, 10)
-			
-			enabled.BackgroundColor3 = Color3.new(255, 0, 0)
-			
-			Instance.new('UICorner', enabled).CornerRadius = UDim.new(0, 10)
-			
-			settingTab.Activated:Connect(function()
-				settings[setting] = not settings[setting]
+				settingTab.Text = setting
+				settingTab.Font = font
+				settingTab.TextSize = fontSize
+				settingTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+				Instance.new('UICorner', settingTab).CornerRadius = UDim.new(0, 5)
 				
-				enabled.BackgroundColor3 = if settings[setting] then Color3.new(0, 255, 0) else Color3.new(255, 0, 0)
-			end)
+				local enabled = Instance.new('Frame', settingTab)
+				enabled.AnchorPoint = Vector2.new(1, 0.5)
+				enabled.Position = UDim2.new(1, -10, 0.5, 0)
+				enabled.Size = UDim2.new(0, 10, 0, 10)
+				
+				enabled.BackgroundColor3 = Color3.new(255, 0, 0)
+				
+				Instance.new('UICorner', enabled).CornerRadius = UDim.new(0, 10)
+				
+				settingTab.Activated:Connect(function()
+					settings[setting] = not settings[setting]
+					
+					enabled.BackgroundColor3 = if settings[setting] then Color3.new(0, 255, 0) else Color3.new(255, 0, 0)
+				end)
+				
+			elseif (settingType == 'boolean') or (settingType == 'number') then
+				local settingTab = Instance.new('TextBox', page)
+				settingTab.Size = UDim2.new(1, -10, 0, 25)
+				settingTab.Position = UDim2.new(0, 5, 0, 5 + (pageButtons * 30))
+				settingTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+
+				settingTab.PlaceholderText = ('%s: %s'):format(setting, settingType)
+				settingTab.Text = ''
+				settingTab.Font = font
+				settingTab.TextSize = fontSize
+				settingTab.TextColor3 = Color3.fromRGB(255, 255, 255)
+				settingTab.PlaceholderColor3 = Color3.fromRGB(200, 200, 200)
+
+				Instance.new('UICorner', settingTab).CornerRadius = UDim.new(0, 5)
+				
+				settingTab.FocusLost:Connect(function()
+					settings[setting] = if settingType == 'number' then tonumber(settingTab.Text) else settingTab.Text
+				end)
+			end
 			
 			pageButtons += 1
 		end
@@ -178,8 +243,12 @@ local function init()
 		return button
 	end
 	
-	for title: string, exploit: (any) -> nil in exploits do
-		newButton(title, exploit)
+	for title: string, exploit: {any} in exploits do
+		if exploit['settings'] then
+			newButton(title, exploit)
+		else
+			exploit.func()
+		end
 	end
 	
 	gui.Parent = player.PlayerGui
