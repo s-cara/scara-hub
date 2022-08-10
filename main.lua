@@ -74,7 +74,6 @@ local exploits = {
 local function init()
 	local gui = Instance.new('ScreenGui')
 	gui.ResetOnSpawn = false
-	gui.IgnoreGuiInset = true
 	
 	local background = Instance.new('Frame', gui)
 	background.Position = UDim2.new(0.5, 0, 0.5, 0)
@@ -88,7 +87,7 @@ local function init()
 	top.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	top.BorderSizePixel = 0
 	top.Text = '<b>Porn<font color="rgb(255,163,26)">Hub</font></b>'
-	top.Font = font
+	top.Font = Enum.Font.Gotham
 	top.TextSize = 30
 	top.RichText = true
 	top.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -104,6 +103,12 @@ local function init()
 				background.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
 				
 			until input.UserInputState == Enum.UserInputState.End
+		end
+	end)
+	
+	userInputService.InputBegan:Connect(function(input, alreadyProcessed)
+		if not alreadyProcessed and (input.KeyCode == Enum.KeyCode.RightShift) then
+			background.Visible = not background.Visible
 		end
 	end)
 	
