@@ -77,50 +77,57 @@ local function init()
 	gui.IgnoreGuiInset = true
 	
 	local background = Instance.new('Frame', gui)
-	background.AnchorPoint = Vector2.new(0.5, 0.5)
 	background.Position = UDim2.new(0.5, 0, 0.5, 0)
 	background.Size = UDim2.new(0, 250, 0, 350)
 	background.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 	background.BorderSizePixel = 0
 		
-	local top = Instance.new('TextButton', background)
+	local top = Instance.new('TextLabel', background)
 	top.Size = UDim2.new(1, 0, 0, 50)
 	top.Position = UDim2.new()
 	top.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	top.BorderSizePixel = 0
 	top.Text = '<b>Porn<font color="rgb(255,163,26)">Hub</font></b>'
-	top.Font = Enum.Font.Gotham
+	top.Font = font
 	top.TextSize = 30
 	top.RichText = true
 	top.TextColor3 = Color3.fromRGB(255, 255, 255)
 	
-	local beingDragged = false
+	local mouse = player:GetMouse()
 	
 	top.InputBegan:Connect(function(input)
 		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			beingDragged = true
+			background.AnchorPoint = Vector2.new((mouse.X - background.AbsolutePosition.X) / 250, (mouse.Y - background.AbsolutePosition.Y) / 350)
+			
+			repeat
+				task.wait()
+				background.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
+				
+			until input.UserInputState == Enum.UserInputState.End
 		end
 	end)
 	
-	top.InputEnded:Connect(function(input)
-		if beingDragged and (input.UserInputType == Enum.UserInputType.MouseButton1) then
-			beingDragged = false
-			
-			local mouse = player:GetMouse()
-			
-			background.Position = UDim2.new(mouse.X, 0, mouse.Y, 0)
-		end
-	end)
+	local back = Instance.new('TextButton', background)
+	back.AnchorPoint = Vector2.new(0, 1)
+	back.Size = UDim2.new(1, 0, 0, 25)
+	back.Position = UDim2.new(0, 0, 1, 0)
+	back.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	back.BorderSizePixel = 0
+	back.Text = '<b>Return to main</b>'
+	back.Font = font
+	back.TextSize = fontSize
+	back.RichText = true
+	back.TextColor3 = Color3.fromRGB(255, 255, 255)
 	
 	local buttons = 0
 	local openPage: Frame
 	
 	local main = Instance.new('Frame', background)
-	main.Size = UDim2.new(1, 0, 1, -50)
+	main.Size = UDim2.new(1, 0, 1, -75)
 	main.Position = UDim2.new(0, 0, 0, 50)
 	main.BackgroundTransparency = 1
 	
-	top.Activated:Connect(function()
+	back.Activated:Connect(function()
 		if openPage then
 			openPage.Visible = false
 			main.Visible = true
