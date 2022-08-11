@@ -14,7 +14,8 @@ local fontSize = 18
 --// Functions
 -- Exploit functions
 local exploits = {
-	['Click Teleport'] = {
+	{
+		title = 'Click Teleport',
 		settings = {
 			starterGear = 'boolean'
 		},
@@ -41,61 +42,9 @@ local exploits = {
 			end
 		end
 	},
-	
-	['Fly'] = {
-		settings = {
-			speed = 'number'
-		},
-		
-		func = function(settings: {speed: number})
-			local flying = true
-			local conv = {A = {'RightVector', -1}, D = {'RightVector', 1}, S = {'LookVector', -1}, W = {'LookVector', 1}}
-			local vel = Instance.new('BodyVelocity', player.Character.HumanoidRootPart)
-			vel.Velocity = workspace.CurrentCamera.CFrame.LookVector
 
-			vel.Velocity = Vector3.new(0, 0, 0) 
-			vel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-			
-			local direction: Enum.KeyCode
-
-			userInputService.InputBegan:Connect(function(input, alreadyProcessed)
-				if alreadyProcessed then return end
-
-				if input.KeyCode == Enum.KeyCode.E then
-					flying = not flying
-
-					if flying then
-						vel = Instance.new('BodyVelocity', player.Character.HumanoidRootPart)
-						vel.Velocity = workspace.CurrentCamera.CFrame.LookVector
-
-						vel.Velocity = Vector3.new(0, 0, 0) 
-						vel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-					else
-						vel:Destroy()
-						vel = nil
-					end
-				end
-				
-				if vel and flying and conv[input.KeyCode.Name] then
-					direction = input.KeyCode
-				end				
-			end)
-			
-			while true do task.wait()
-				if not (direction and conv[direction.Name] and vel and flying) then continue end
-				
-				local old = workspace.CurrentCamera.CFrame[conv[direction.Name][1]] * conv[direction.Name][2]
-				
-				if userInputService:IsKeyDown(Enum.KeyCode.W) or userInputService:IsKeyDown(Enum.KeyCode.A) or userInputService:IsKeyDown(Enum.KeyCode.D) or userInputService:IsKeyDown(Enum.KeyCode.S) then
-					vel.Velocity = Vector3.new(old.X * settings.speed, old.Y * settings.speed, old.Z * settings.speed)
-				else
-					vel.Velocity = Vector3.new()
-				end
-			end
-		end,
-	},
-
-	['Humanoid'] = {
+	{
+		title = 'Humanoid',
 		settings = {
 			walkSpeed = 'number',
 			jumpHeight = 'number'
@@ -115,7 +64,8 @@ local exploits = {
 		end,
 	},
 
-	['Teleport To Player'] = {
+	{
+		title = 'Teleport To Player',
 		settings = {
 			playerName = 'string'
 		},
@@ -123,7 +73,62 @@ local exploits = {
 		func = function(settings: {playerName: string})
 			player.Character.PrimaryPart.CFrame = game.Players[settings.playerName].Character.PrimaryPart.CFrame
 		end,
-	}
+	},
+	
+	{
+		title = 'Fly',
+		settings = {
+			speed = 'number'
+		},
+
+		func = function(settings: {speed: number})
+			local flying = true
+			local conv = {A = {'RightVector', -1}, D = {'RightVector', 1}, S = {'LookVector', -1}, W = {'LookVector', 1}}
+			local vel = Instance.new('BodyVelocity', player.Character.HumanoidRootPart)
+			vel.Velocity = workspace.CurrentCamera.CFrame.LookVector
+
+			vel.Velocity = Vector3.new(0, 0, 0) 
+			vel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+
+			local direction: Enum.KeyCode
+			local velocity = Vector3.new()
+
+			userInputService.InputBegan:Connect(function(input, alreadyProcessed)
+				if alreadyProcessed then return end
+
+				if input.KeyCode == Enum.KeyCode.E then
+					flying = not flying
+
+					if flying then
+						vel = Instance.new('BodyVelocity', player.Character.HumanoidRootPart)
+						vel.Velocity = workspace.CurrentCamera.CFrame.LookVector
+
+						vel.Velocity = Vector3.new(0, 0, 0) 
+						vel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+					else
+						vel:Destroy()
+						vel = nil
+					end
+				end
+
+				if vel and flying and conv[input.KeyCode.Name] then
+					direction = input.KeyCode
+				end				
+			end)
+
+			while task.wait() do
+				if not (direction and conv[direction.Name] and vel and flying) then continue end
+
+				local old = workspace.CurrentCamera.CFrame[conv[direction.Name][1]] * conv[direction.Name][2]
+
+				if userInputService:IsKeyDown(Enum.KeyCode.W) or userInputService:IsKeyDown(Enum.KeyCode.A) or userInputService:IsKeyDown(Enum.KeyCode.D) or userInputService:IsKeyDown(Enum.KeyCode.S) then
+					vel.Velocity = Vector3.new(old.X * settings.speed, old.Y * settings.speed, old.Z * settings.speed)
+				else
+					vel.Velocity = Vector3.new()
+				end
+			end
+		end,
+	},
 }
 
 -- construct main gui
@@ -238,7 +243,7 @@ local function init()
 
 		-- executes the exploit
 		execute.Activated:Connect(function()
-			info.func(settings)
+			coroutine.wrap(info.func)(settings)
 		end)
 
 		-- constructs setting buttons
@@ -309,12 +314,8 @@ local function init()
 		return button
 	end
 
-	for title: string, exploit: {any} in pairs(exploits) do
-		if exploit['settings'] then
-			newButton(title, exploit)
-		else
-			exploit.func()
-		end
+	for _, exploit: {any} in pairs(exploits) do
+		newButton(exploit.title, exploit)
 	end
 
 	gui.Parent = player.PlayerGui
