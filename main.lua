@@ -28,7 +28,7 @@ local exploits = {
 				tool.RequiresHandle = false
 				tool.Name = "Click Teleport"
 
-				tool.Activated:Connect(function ()
+				tool.Activated:Connect(function()
 					local pos = mouse.Hit
 					pos = CFrame.new(pos.X, pos.Y + 2.5, pos.Z)
 					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
