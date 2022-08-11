@@ -11,6 +11,10 @@ local player = playerService.LocalPlayer
 local font = Enum.Font.SourceSansSemibold
 local fontSize = 18
 
+--// Variables
+local flySpeed = 25
+local flyEnabled = false
+
 --// Functions
 -- Exploit functions
 local exploits = {
@@ -28,7 +32,7 @@ local exploits = {
 				tool.RequiresHandle = false
 				tool.Name = "Click Teleport"
 
-				tool.Activated:Connect(function()
+				tool.Activated:Connect(function ()
 					local pos = mouse.Hit
 					pos = CFrame.new(pos.X, pos.Y + 2.5, pos.Z)
 					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
@@ -74,7 +78,7 @@ local exploits = {
 			player.Character.PrimaryPart.CFrame = game.Players[settings.playerName].Character.PrimaryPart.CFrame
 		end,
 	},
-	
+
 	{
 		title = 'Fly',
 		settings = {
@@ -82,6 +86,12 @@ local exploits = {
 		},
 
 		func = function(settings: {speed: number})
+			flySpeed = settings.speed
+			
+			if flyEnabled then return end
+			
+			flyEnabled = true
+			
 			local flying = true
 			local conv = {A = {'RightVector', -1}, D = {'RightVector', 1}, S = {'LookVector', -1}, W = {'LookVector', 1}}
 			local vel = Instance.new('BodyVelocity', player.Character.HumanoidRootPart)
@@ -122,7 +132,7 @@ local exploits = {
 				local old = workspace.CurrentCamera.CFrame[conv[direction.Name][1]] * conv[direction.Name][2]
 
 				if userInputService:IsKeyDown(Enum.KeyCode.W) or userInputService:IsKeyDown(Enum.KeyCode.A) or userInputService:IsKeyDown(Enum.KeyCode.D) or userInputService:IsKeyDown(Enum.KeyCode.S) then
-					vel.Velocity = Vector3.new(old.X * settings.speed, old.Y * settings.speed, old.Z * settings.speed)
+					vel.Velocity = Vector3.new(old.X * flySpeed, old.Y * flySpeed, old.Z * flySpeed)
 				else
 					vel.Velocity = Vector3.new()
 				end
