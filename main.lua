@@ -12,8 +12,13 @@ local font = Enum.Font.SourceSansSemibold
 local fontSize = 18
 
 --// Variables
+-- hub
+local hideKeybind = Enum.KeyCode.RightShift
+
+-- fly
 local flySpeed = 25
 local flyEnabled = false
+local flyKeybind: Enum.KeyCode
 
 --// Functions
 -- Exploit functions
@@ -82,35 +87,36 @@ local exploits = {
 	{
 		title = 'Fly',
 		settings = {
-			speed = 'number'
+			speed = 'number',
+			keybind = 'string'
 		},
 
-		func = function(settings: {speed: number})
+		func = function(settings: {speed: number, keybind: string})
 			flySpeed = settings.speed
 			
-			if flyEnabled then return end
+			local s, kb = pcall(function() return Enum.KeyCode[settings.keybind] end)
+			flyKeybind = if s then kb else Enum.KeyCode.E
 			
+			if flyEnabled then return end
 			flyEnabled = true
 			
 			local flying = true
 			local conv = {A = {'RightVector', -1}, D = {'RightVector', 1}, S = {'LookVector', -1}, W = {'LookVector', 1}}
-			local vel = Instance.new('BodyVelocity', player.Character.HumanoidRootPart)
-			vel.Velocity = workspace.CurrentCamera.CFrame.LookVector
-
+			local vel = Instance.new('BodyVelocity', player.Character.PrimaryPart)
 			vel.Velocity = Vector3.new(0, 0, 0) 
 			vel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
 
-			local direction: Enum.KeyCode
+			local direction: string
 			local velocity = Vector3.new()
 
 			userInputService.InputBegan:Connect(function(input, alreadyProcessed)
 				if alreadyProcessed then return end
 
-				if input.KeyCode == Enum.KeyCode.E then
+				if input.KeyCode == flyKeybind then
 					flying = not flying
 
 					if flying then
-						vel = Instance.new('BodyVelocity', player.Character.HumanoidRootPart)
+						vel = Instance.new('BodyVelocity', player.Character.PrimaryPart)
 						vel.Velocity = workspace.CurrentCamera.CFrame.LookVector
 
 						vel.Velocity = Vector3.new(0, 0, 0) 
@@ -122,16 +128,16 @@ local exploits = {
 				end
 
 				if vel and flying and conv[input.KeyCode.Name] then
-					direction = input.KeyCode
+					direction = input.KeyCode.Name
 				end				
 			end)
 
 			while task.wait() do
-				if not (direction and conv[direction.Name] and vel and flying) then continue end
-
-				local old = workspace.CurrentCamera.CFrame[conv[direction.Name][1]] * conv[direction.Name][2]
-
+				if not (conv[direction] and vel and flying) then continue end
+				
 				if userInputService:IsKeyDown(Enum.KeyCode.W) or userInputService:IsKeyDown(Enum.KeyCode.A) or userInputService:IsKeyDown(Enum.KeyCode.D) or userInputService:IsKeyDown(Enum.KeyCode.S) then
+					local old = workspace.CurrentCamera.CFrame[conv[direction][1]] * conv[direction][2]
+					
 					vel.Velocity = Vector3.new(old.X * flySpeed, old.Y * flySpeed, old.Z * flySpeed)
 				else
 					vel.Velocity = Vector3.new()
@@ -181,7 +187,7 @@ local function init()
 
 	-- handles hiding ui
 	userInputService.InputBegan:Connect(function(input, alreadyProcessed)
-		if not alreadyProcessed and (input.KeyCode == Enum.KeyCode.RightShift) then
+		if not alreadyProcessed and (input.KeyCode == hideKeybind) then
 			background.Visible = not background.Visible
 		end
 	end)
@@ -215,7 +221,7 @@ local function init()
 	end)
 
 	-- function to create a new button and page linked to the button
-	local function newButton(title: string, info: {settings: {any: any}, func: (any) -> nil}): TextButton
+	local function newButton(title: string, info: {settings: {any: any}, func: (any) -> nil}, altTitle: string?): TextButton
 		local settings = {}
 
 		local button = Instance.new('TextButton', main)
@@ -243,7 +249,7 @@ local function init()
 		execute.Position = UDim2.new(0, 5, 0, 5)
 		execute.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 
-		execute.Text = '<b>Execute</b>'
+		execute.Text = altTitle or '<b>Execute</b>'
 		execute.RichText = true
 		execute.Font = font
 		execute.TextSize = fontSize
@@ -307,7 +313,7 @@ local function init()
 				Instance.new('UICorner', settingTab).CornerRadius = UDim.new(0, 5)
 
 				settingTab.FocusLost:Connect(function()
-					settings[setting] = if settingType == 'number' then tonumber(settingTab.Text) else settingTab.Text
+					settings[setting] = if not settingTab.Text then (if settingType == 'number' then 0 else '') elseif settingType == 'number' then tonumber(settingTab.Text) else settingTab.Text
 				end)
 			end
 
@@ -323,6 +329,19 @@ local function init()
 
 		return button
 	end
+	
+	newButton('Settings',
+		{
+			settings = {hubTitle = 'string', hideKeybind = 'string'},
+			func = function(settings: {hubTitle: string, hideKeybind: string})
+				local s, kb = pcall(function() return Enum.KeyCode[settings.hideKeybind] end)
+				hideKeybind = if s then kb else hideKeybind
+				
+				top.Text = if settings.hubTitle ~= '' then settings.hubTitle else top.Text
+			end
+		},
+		'<b>Apply settings</b>'
+	)
 
 	for _, exploit: {any} in pairs(exploits) do
 		newButton(exploit.title, exploit)
