@@ -37,7 +37,7 @@ local exploits = {
 				tool.RequiresHandle = false
 				tool.Name = "Click Teleport"
 
-				tool.Activated:Connect(function ()
+				tool.Activated:Connect(function()
 					local pos = mouse.Hit
 					pos = CFrame.new(pos.X, pos.Y + 2.5, pos.Z)
 					game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = pos
@@ -91,22 +91,40 @@ local exploits = {
 			keybind = 'string'
 		},
 
-		func = function(settings: {speed: number, keybind: string})
+		func = function(settings: {speed: number, keybind: string?})
 			flySpeed = settings.speed
-			
+
 			local s, kb = pcall(function() return Enum.KeyCode[settings.keybind] end)
 			flyKeybind = if s then kb else Enum.KeyCode.E
-			
+
 			if flyEnabled then return end
 			flyEnabled = true
-			
+
 			local flying = true
-			local conv = {A = {'RightVector', -1}, D = {'RightVector', 1}, S = {'LookVector', -1}, W = {'LookVector', 1}}
+			local conv = {A = {'RightVector', -1, 'A'}, D = {'RightVector', 1, 'D'}, S = {'LookVector', -1, 'S'}, W = {'LookVector', 1, 'W'}}
+
+			local heldKeys: {string} = {}
+			local keyInverse = {W = 'S', A = 'D', S = 'W', D = 'A'}
+
+			local function addKey(key: string)
+				local invPos = table.find(heldKeys, keyInverse[key])
+
+				if invPos then
+					table.remove(heldKeys, invPos)
+				else
+					table.insert(heldKeys, key)
+				end
+			end
+
+			local function removeKey(key: string)
+				if table.find(heldKeys, key) then
+					table.remove(heldKeys, table.find(heldKeys, key))
+				end
+			end
+
 			local vel = Instance.new('BodyVelocity', player.Character.PrimaryPart)
 			vel.Velocity = Vector3.new(0, 0, 0) 
 			vel.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-
-			local direction: string
 			local velocity = Vector3.new()
 
 			userInputService.InputBegan:Connect(function(input, alreadyProcessed)
@@ -128,20 +146,26 @@ local exploits = {
 				end
 
 				if vel and flying and conv[input.KeyCode.Name] then
-					direction = input.KeyCode.Name
+					addKey(input.KeyCode.Name)
 				end				
 			end)
 
+			userInputService.InputEnded:Connect(function(input, alreadyProcessed)
+				if alreadyProcessed then return end
+
+				removeKey(input.KeyCode.Name)
+			end)
+
 			while task.wait() do
-				if not (conv[direction] and vel and flying) then continue end
-				
-				if userInputService:IsKeyDown(Enum.KeyCode.W) or userInputService:IsKeyDown(Enum.KeyCode.A) or userInputService:IsKeyDown(Enum.KeyCode.D) or userInputService:IsKeyDown(Enum.KeyCode.S) then
-					local old = workspace.CurrentCamera.CFrame[conv[direction][1]] * conv[direction][2]
-					
-					vel.Velocity = Vector3.new(old.X * flySpeed, old.Y * flySpeed, old.Z * flySpeed)
-				else
-					vel.Velocity = Vector3.new()
+				if not (vel and flying) then continue end
+
+				local dir_t = {Vector3.new()}
+
+				for idx, key in pairs(heldKeys) do
+					dir_t[idx] = workspace.CurrentCamera.CFrame[conv[key][1]] * conv[key][2]
 				end
+
+				vel.Velocity = (if #heldKeys == 0 then Vector3.new() elseif #heldKeys == 1 then dir_t[1] else dir_t[1]:Lerp(dir_t[2], 0.5)) * flySpeed
 			end
 		end,
 	},
@@ -152,7 +176,7 @@ local exploits = {
 			playerName = 'string',
 			endKeybind = 'string'
 		},
-		
+
 		func = function(settings: {playerName: string, endKeybind: string})
 			local s, kb = pcall(function() return Enum.KeyCode[settings.keybind] end)
 			local endKeybind = if s then kb else Enum.KeyCode.E
@@ -354,14 +378,14 @@ local function init()
 
 		return button
 	end
-	
+
 	newButton('Settings',
 		{
 			settings = {hubTitle = 'string', hideKeybind = 'string'},
 			func = function(settings: {hubTitle: string, hideKeybind: string})
 				local s, kb = pcall(function() return Enum.KeyCode[settings.hideKeybind] end)
 				hideKeybind = if s then kb else hideKeybind
-				
+
 				top.Text = if settings.hubTitle ~= '' then settings.hubTitle else top.Text
 			end
 		},
