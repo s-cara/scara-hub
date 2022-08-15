@@ -213,7 +213,7 @@ local function init()
 	top.Position = UDim2.new()
 	top.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	top.BorderSizePixel = 0
-	top.Text = '<b>Porn<font color="rgb(255,163,26)">Hub</font></b>'
+	top.Text = '<b>Scara<font color="rgb(0, 0, 255)">Hub</font></b>'
 	top.Font = Enum.Font.Gotham
 	top.TextSize = 30
 	top.RichText = true
