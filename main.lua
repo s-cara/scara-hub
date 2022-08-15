@@ -145,6 +145,31 @@ local exploits = {
 			end
 		end,
 	},
+
+	{
+		title = 'Follow',
+		settings = {
+			playerName = 'string',
+			endKeybind = 'string'
+		},
+		
+		func = function(settings: {playerName: string, endKeybind: string})
+			local s, kb = pcall(function() return Enum.KeyCode[settings.keybind] end)
+			local endKeybind = if s then kb else Enum.KeyCode.E
+
+			local broken = false
+
+			local c = userInputService.InputBegan:Connect(function(input, pr)
+				broken = input.KeyCode == endKeybind and not pr
+			end)
+
+			while task.wait() and not broken do
+				player.Character.PrimaryPart.CFrame = game.Players[settings.playerName].Character.PrimaryPart.CFrame
+			end
+
+			c:Disconnect()
+		end
+	}
 }
 
 -- construct main gui
